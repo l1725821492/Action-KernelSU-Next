@@ -117,14 +117,17 @@ jobs:
            cd ./msm-kernel && git add -A && git commit -a -m "BUILD Kernel"
            cd ..
              
-           cp ../kernel_patches/apk_sign.c_fix.patch ./
-           patch -p1 -F 3 < apk_sign.c_fix.patch
+           # Apply additional patches only if KernelSU Next is enabled
+           if [ "${{ github.event.inputs.KSUNEXT_ENABLED }}" == "true" ]; then
+             cp ../kernel_patches/apk_sign.c_fix.patch ./
+             patch -p1 -F 3 < apk_sign.c_fix.patch || echo "apk_sign.c_fix.patch failed or not needed"
              
-           cp ../kernel_patches/core_hook.c_fix.patch ./
-           patch -p1 --fuzz=3 < ./core_hook.c_fix.patch
-           
-           cp ../kernel_patches/selinux.c_fix.patch ./
-           patch -p1 -F 3 < selinux.c_fix.patch
+             cp ../kernel_patches/core_hook.c_fix.patch ./
+             patch -p1 --fuzz=3 < ./core_hook.c_fix.patch || echo "core_hook.c_fix.patch failed or not needed"
+             
+             cp ../kernel_patches/selinux.c_fix.patch ./
+             patch -p1 -F 3 < selinux.c_fix.patch || echo "selinux.c_fix.patch failed or not needed"
+           fi
            
       - name: Build kernel
         run: |
